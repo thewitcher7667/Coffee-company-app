@@ -1,0 +1,58 @@
+﻿@using Data_Access_Layer.Models;
+@using Microsoft.AspNetCore.Mvc.ModelBinding;
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model LoginModel
+@{
+    Layout = null;
+    var returnUrl = ViewData["ReturnUrl"] as string;
+    var errors = ViewData["Errors"] as List<ModelError>;
+    if (errors == null)
+        errors = new List<ModelError>();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/css/bootstrap.min.css" integrity="sha512-rt/SrQ4UNIaGfDyEXZtNcyWvQeOq0QLygHluFQcSjaGB04IxWhal71tKuzP6K8eYXYB6vJV4pHkXcmFGGQ1/0w==" crossorigin="anonymous" referrerpolicy="no-referrer" />      <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="dark">
+    <div class="card mt-4 p-4 d-flex flex-column justify-content-center align-items-center w-100 signup">
+        <div class="card-header">
+            <h2>Login</h2>
+        </div>
+        <div class="card-body col-9">
+            <form method="post" action="/Login?returnUrl=@System.Net.WebUtility.UrlDecode(returnUrl)">
+                <div class="text-danger" asp-validation-summary="ModelOnly">
+                </div>
+                <div class="form-group mt-2">
+                    <label class="control-label">Name</label>
+                    <input name="Name" asp-for="Name" class="form-control" />
+                    <span id="emailSpan" asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="form-group mt-2">
+                    <label class="control-label">Password</label>
+                    <input name="password" type="password" asp-for="Password" class="form-control"/>
+                    <span id="passwordSpan" asp-validation-for="Password" class="text-danger" ></span>
+                </div>
+                <div class="form-group mt-2">
+                    <label class="control-label">RememberMe</label>
+                    <input type="checkbox" name="RememberMe"  asp-for="RememberMe" class="form-inline" />
+                </div>
+                <div class="form-group mt-4">
+                    <input type="submit" value="Login" class="btn btn-dark" />
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/js/bootstrap.min.js" integrity="sha512-7rusk8kGPFynZWu26OKbTeI+QPoYchtxsmPeBqkHIEXJxeun4yJ4ISYe7C6sz9wdxeE1Gk3VxsIWgCZTc+vX3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+</body>
+</html>

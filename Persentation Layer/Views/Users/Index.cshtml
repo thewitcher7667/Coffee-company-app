@@ -1,0 +1,264 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<h1>Users</h1>
+
+<div>
+    <div>
+        <button id="addButt" class="btn btn-dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-plus-fill" viewBox="0 0 16 16">
+              <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+              <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/>
+            </svg>
+        </button>
+    </div>
+</div>
+<div class="table-responsive-lg">
+    <table class="table table-hover table-dark">
+        <thead>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Department</th>
+        </thead>
+        <tbody id="tbody">
+        </tbody>
+    </table>
+</div>
+
+<div id="addUser" style="display:none;">
+    <small class="text-danger" id="errAdd"></small>
+    <input readonly id="userId" style="display:none;" />
+    <div>
+        <label>UserName</label>
+        <input type="text" id="userNameAdd" placeholder="username" />
+    </div>
+    <div>
+        <label>Email</label>
+        <input type="text" id="emailAdd" placeholder="email" />
+    </div>
+    <div>
+        <label>Departmen</label>
+        <select id="selectAdd" ></select>
+    </div>
+    <div id="passwordAddDiv">
+        <label>Passowrd</label>
+        <input type="password" id="passwordAdd"  />
+        <label>Confirm Passowrd</label>
+        <input type="password" id="confirmPasswordAdd"  />
+    </div>
+</div>
+
+@section Styles{
+    <link href="https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
+}
+
+@section scripts{
+    <script src="https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script> 
+    <script>
+        let tbody = document.getElementById("tbody");
+        let userNameAdd = document.getElementById("userNameAdd");
+        let emailAdd = document.getElementById("emailAdd");
+        let selectAdd = document.getElementById("selectAdd");
+        let passwordAdd = document.getElementById("passwordAdd");
+        let confirmPasswordAdd = document.getElementById("confirmPasswordAdd");
+        let userId = document.getElementById("userId");
+        let passwordAddDiv = document.getElementById("passwordAddDiv")
+
+        getData()
+        async function getData()
+        {
+            let resUsers = await fetch("/api/Users")
+            let resJson = await resUsers.json();
+
+            let resDepartment = await fetch("/api/Department")
+            let resJsonDep = await resDepartment.json();
+
+            console.log(resJson,resJsonDep)
+
+            createTbody(resJson)
+            createSelect(selectAdd,resJsonDep)
+        }
+
+        function createSelect(selectElement,data)
+        {
+            let fragment = document.createDocumentFragment();
+            for(let i=0;i<data.length;i++)
+            {
+                let option = document.createElement("option");
+                option.value = data[i].id
+                option.innerText = data[i].name;
+                fragment.appendChild(option);
+            }
+            selectElement.appendChild(fragment);
+        }
+
+        function createTbody(data)
+        {
+            let html = "";
+            for(let i=0;i<data.length;i++)
+            {
+                html += `
+                    <tr>
+                        <td>${data[i].userName}</td>
+                        <td>${data[i].email}</td>
+                        <td>${data[i].department.name}</td>
+                        <td><button onclick="edit(event)" class="btn btn-light" value="${data[i].id}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                            </svg>
+                        </button></td>
+                        <td><button onclick="deleteItem(event)" class="btn btn-light" value="${data[i].id}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
+                            </svg>
+                        </button></td>
+                    </tr>
+                `
+            }
+            tbody.insertAdjacentHTML("beforeend",html);
+        }
+
+        function dialog(isAdd,button)
+        {
+            $('#addUser').dialog({        
+                modal: true,
+                bgiframe: true,
+                width: 300,
+                height: 300,
+                autoOpen: false,
+                buttons: {
+                    Add:function(){
+                        if(isAdd)
+                        {
+                            addUserButt();
+                        }
+                        else
+                        {
+                            editUser(button)
+                        }
+                    },
+                    Cancel: function() {
+                        clearDialog()
+                        $(this).dialog('close');
+                    }
+                }
+            });
+        }
+
+
+        async function deleteItem(event)
+        {
+            let butt = event.currentTarget
+            let res = await fetch(`/api/Users/${butt.value}`,{
+                method:"DELETE"
+            })
+            let resp = await res.json();
+            if(resp)
+            {
+                butt.parentElement.parentElement.remove();
+            }
+        }
+
+        async function edit(event)
+        {
+            let butt = event.currentTarget
+            dialog(false,butt)
+            let userRes =await fetch(`/api/Users/GetById/${butt.value}`)
+            let user = await userRes.json();
+
+            userNameAdd.value = user.userName
+            emailAdd.value = user.email
+            userId.value = user.id;
+            
+            $("#selectAdd").val(user.department.id)
+
+            passwordAddDiv.style.display = "none";
+            $('#addUser').dialog("open")
+        }
+
+        async function editUser(butt)
+        {
+            let user = {
+                id : userId.value,
+                userName : userNameAdd.value,
+                email : emailAdd.value,
+                departmentId : selectAdd.value,
+
+            }
+
+            let res = await fetch("/api/Users",{
+                method:"PUT",
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json'  },
+                body:JSON.stringify(user)
+            })
+
+            let resp = await res.json();
+            if(res.status !== 200)
+            {
+                document.getElementById("errAdd").innerText = resp.detail
+            }
+            else
+            {
+                user.department = {
+                    name : selectAdd.options[selectAdd.selectedIndex].text
+                }
+                butt.parentElement.parentElement.remove();
+                createTbody([user]);
+                $('#addUser').dialog("close")
+                clearDialog()
+            }
+
+
+        }
+
+        document.getElementById("addButt").addEventListener("click",()=>{
+            dialog(true)
+            passwordAddDiv.style.display = "inline-block";
+            $('#addUser').dialog("open")
+        })
+
+        async function addUserButt()
+        {
+            let user = {
+                UserName : userNameAdd.value,
+                Email : emailAdd.value,
+                DepartmentId : selectAdd.value,
+                PasswordHash : passwordAdd.value,
+                ConfirmPassword : confirmPasswordAdd.value
+            }
+
+            console.log(user)
+
+            let res = await fetch("/api/Users",{
+                method : "POST",
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json'  },
+                body : JSON.stringify(user)
+            })
+            let resJson = await res.json()
+            if(res.status !== 200)
+            {
+                document.getElementById("errAdd").innerText = resJson.detail
+            }
+            else
+            {
+                createTbody([resJson])
+                $("#addUser").dialog('close');
+                clearDialog()
+            }
+        }
+
+        function clearDialog()
+        {
+            document.getElementById("errAdd").innerText = "";
+            userNameAdd.value = "";
+            emailAdd.value = "";
+            passwordAdd.value = "";
+            confirmPasswordAdd.value = "";
+        }
+    </script>
+}

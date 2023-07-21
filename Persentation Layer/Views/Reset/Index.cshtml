@@ -1,0 +1,226 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    var userId = ViewData["UserId"] as string;
+}
+<input id="userId" readonly style="display:none;" value="@userId" />
+<h1>Buy Coffee</h1>
+
+<div class="table-responsive-lg">
+    <table class="table table-hover table-dark">
+        <thead>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Description</th>
+            <th>Quantity</th>
+            <th>Category Name</th>
+        </thead>
+        <tbody id="tbody">
+        </tbody>
+    </table>
+</div>
+
+<h1>Your Reset</h1>
+
+<div class="table-responsive-lg">
+    <table class="table table-hover table-dark">
+        <thead>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Quantity</th>
+        </thead>
+        <tbody id="tbodyReset">
+        </tbody>
+        <tr>
+            <td>Total</td>
+            <td id="totalPrice"></td>
+        </tr>
+    </table>
+</div>
+
+<button class="btn btn-dark" onclick="buy(event)">Buy</button>
+
+@section Styles{
+    <link href="https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
+}
+
+@section scripts{
+    <script src="https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script> 
+    <script>
+        let tbody = document.getElementById("tbody");
+        let tbodyReset = document.getElementById("tbodyReset");
+        let nameAdd = document.getElementById("nameAdd");
+        let priceAdd = document.getElementById("priceAdd");
+        let descriptionAdd = document.getElementById("descriptionAdd");
+        let totalPrice = document.getElementById("totalPrice");
+        let userId = document.getElementById("userId");
+        let itemsBuyed = [];
+        let itemsBuyedView = [];
+
+        getData()
+        async function getData()
+        {
+            let resUsers = await fetch("/api/CoffeItems")
+            let resJson = await resUsers.json();
+
+            createTbody(resJson)
+        }
+
+        function createTbody(data)
+        {
+            let html = "";
+            for(let i=0;i<data.length;i++)
+            {
+                console.log(data[i],JSON.stringify(data[i]))
+                html += `
+                    <tr>
+                        <td>${data[i].name}</td>
+                        <td>${data[i].price}</td>
+                        <td>${data[i].description}</td>
+                        <td>${data[i].quantity}</td>
+                        <td>${data[i].category.name}</td>
+                        <td><button onclick="add(event,'${data[i].name}',${data[i].price},${data[i].quantity})" class="btn btn-light" value="${data[i].id}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-square-fill" viewBox="0 0 16 16">
+                            <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0z"/>
+                            </svg>
+                        </button></td>
+                    </tr>
+                `
+            }
+            tbody.insertAdjacentHTML("beforeend",html);
+        }
+
+        function createTbodyReset(data)
+        {
+            let html = "";
+            tbodyReset.innerHTML = "";
+            let total = 0;
+            for(let i=0;i<data.length;i++)
+            {
+                console.log(data[i],JSON.stringify(data[i]))
+                html += `
+                    <tr>
+                        <td>${data[i].name}</td>
+                        <td>${data[i].price}</td>
+                        <td>${data[i].quantity}</td>
+                        <td><button onclick="removeItem(event,'${data[i].name}',${data[i].actualPrice},${data[i].quantity})" class="btn btn-light" value="${data[i].id}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash-square-fill" viewBox="0 0 16 16">
+                                <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm2.5 7.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1z"/>
+                            </svg>
+                        </button></td>
+                    </tr>
+                `
+                total += data[i].price
+            }
+            totalPrice.innerText = total;
+            tbodyReset.insertAdjacentHTML("beforeend",html);
+        }
+
+        async function add(event,coffeeName,coffeePrice,coffeeQuantity)
+        {
+            let butt = event.currentTarget
+            currentCoffeeItem = {
+                name : coffeeName,
+                price : coffeePrice,
+                quantity : coffeeQuantity,
+                id : parseInt(butt.value),
+            }
+
+            for(let i=0;i<itemsBuyed.length;i++)
+            {
+                if(itemsBuyed[i].coffeItemId == currentCoffeeItem.id)
+                {
+                    if(currentCoffeeItem.quantity - itemsBuyed[i].quantity !== 0)
+                    {
+                        itemsBuyed[i].quantity += 1;
+                        itemsBuyed[i].price +=currentCoffeeItem.price;
+
+                        itemsBuyedView[i].quantity = itemsBuyed[i].quantity;
+                        itemsBuyedView[i].price = itemsBuyed[i].price;
+                        itemsBuyedView[i].actualPrice = currentCoffeeItem.price
+                        createTbodyReset(itemsBuyedView)
+                    }
+                    return;
+                }
+            }
+
+            if(currentCoffeeItem.quantity !== 0)
+            {
+                itemsBuyed.push({
+                    quantity : 1,
+                    price :currentCoffeeItem.price,
+                    coffeItemId : currentCoffeeItem.id
+                })
+
+                itemsBuyedView.push({
+                    name : coffeeName,
+                    price : currentCoffeeItem.price,
+                    actualPrice : currentCoffeeItem.price,
+                    quantity : 1,
+                    id : currentCoffeeItem.id
+                })
+
+                totalPrice.innerText = currentCoffeeItem.price;
+                createTbodyReset(itemsBuyedView)
+            }   
+            console.log(itemsBuyed)
+        }
+
+    function removeItem(event,coffeeName,coffeePrice,coffeeQuantity)
+    {
+        let butt = event.currentTarget
+
+        currentCoffeeItem = {
+            name : coffeeName,
+            price : coffeePrice,
+            quantity : coffeeQuantity,
+            id : parseInt(butt.value),
+        }
+        for(let i=0;i<itemsBuyed.length;i++)
+        {
+            if(itemsBuyed[i].coffeItemId == currentCoffeeItem.id)
+            {
+                if(itemsBuyed[i].quantity - 1  !== 0)
+                {
+                    itemsBuyed[i].quantity -= 1;
+                    itemsBuyed[i].price -= currentCoffeeItem.price;
+
+                    itemsBuyedView[i].quantity = itemsBuyed[i].quantity;
+                    itemsBuyedView[i].price = itemsBuyed[i].price;
+
+                }
+                else
+                {
+                    itemsBuyed.splice(i,1);
+                    itemsBuyedView.splice(i,1);
+                }
+                createTbodyReset(itemsBuyedView)
+                return;
+            }
+        }
+    }
+
+    async function buy(event)
+    {
+        if(itemsBuyed.length === 0)
+            return;
+        let butt = event.target;
+        console.log(itemsBuyed)
+        let res = await fetch(`/api/Reset?userId=${userId.value}`,{
+            method : "POST",
+            credentials : 'same-origin' ,
+            headers : { 'Content-Type': 'application/json'  },
+            body:JSON.stringify(itemsBuyed)
+        })
+
+        if(res.status === 200)
+        {
+            let resp = await res.json();
+            window.location.assign(`/Home/BuyCoffee/Reset/${resp.id}`);
+        }
+        butt.style.display = "2px red solid"
+    }
+
+    </script>
+}

@@ -1,0 +1,36 @@
+﻿@model Reset
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<h1>Reset</h1>
+
+<div class="table-responsive-lg">
+    <table class="table table-hover table-dark">
+        <thead>
+            <td>Item Name</td>
+            <td>Item Id</td>
+            <td>Quantity</td>
+            <td>Price</td>
+        </thead>
+        <tbody>
+            @for(int i=0;i<Model.ItemsBuyed.Count;i++)
+            {
+                <tr>
+                    <td>@Model.ItemsBuyed[i].CoffeItem.Name</td>
+                     <td>@Model.ItemsBuyed[i].CoffeItem.Id</td>
+                    <td>@Model.ItemsBuyed[i].Quantity</td>
+                    <td>@Model.ItemsBuyed[i].Price</td>
+                </tr>
+            }
+            <tr>
+                <td> Time</td>
+                <td>@Model.DateTime</td>     
+                 <td>Total Price</td>
+                <td>@Model.TotalPrice</td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
